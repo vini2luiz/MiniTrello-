@@ -1,201 +1,224 @@
 
-import { Task, User, CreateTaskRequest, UpdateTaskRequest, LoginRequest, RegisterRequest, ApiResponse, TaskStatus } from '../types';
+import { 
+  Task, 
+  User, 
+  CreateTaskRequest, 
+  UpdateTaskRequest, 
+  LoginRequest, 
+  RegisterRequest, 
+  ApiResponse,
+  TaskStatus 
+} from '../types';
 
-// Simulação de banco SQLite usando localStorage
 class TaskManagerAPI {
-  private readonly USERS_KEY = 'taskmanager_users';
-  private readonly TASKS_KEY = 'taskmanager_tasks';
-  private readonly AUTH_KEY = 'taskmanager_auth';
+  private users: User[] = [];
+  private tasks: Task[] = [];
+  private currentUserId: string | null = null;
 
   constructor() {
-    this.initializeData();
+    this.loadFromStorage();
   }
 
-  private initializeData() {
-    if (!localStorage.getItem(this.USERS_KEY)) {
-      localStorage.setItem(this.USERS_KEY, JSON.stringify([]));
+  private loadFromStorage() {
+    const users = localStorage.getItem('taskmanager_users');
+    const tasks = localStorage.getItem('taskmanager_tasks');
+    
+    if (users) {
+      this.users = JSON.parse(users);
     }
-    if (!localStorage.getItem(this.TASKS_KEY)) {
-      localStorage.setItem(this.TASKS_KEY, JSON.stringify([]));
+    
+    if (tasks) {
+      this.tasks = JSON.parse(tasks);
     }
   }
 
-  private getUsers(): User[] {
-    return JSON.parse(localStorage.getItem(this.USERS_KEY) || '[]');
-  }
-
-  private saveUsers(users: User[]) {
-    localStorage.setItem(this.USERS_KEY, JSON.stringify(users));
-  }
-
-  private getTasks(): Task[] {
-    return JSON.parse(localStorage.getItem(this.TASKS_KEY) || '[]');
-  }
-
-  private saveTasks(tasks: Task[]) {
-    localStorage.setItem(this.TASKS_KEY, JSON.stringify(tasks));
+  private saveToStorage() {
+    localStorage.setItem('taskmanager_users', JSON.stringify(this.users));
+    localStorage.setItem('taskmanager_tasks', JSON.stringify(this.tasks));
   }
 
   private generateId(): string {
-    return Date.now().toString() + Math.random().toString(36).substr(2, 9);
+    return Math.random().toString(36).substr(2, 9);
   }
 
-  private generateJWT(userId: string): string {
-    // Simulação simples de JWT - em produção usaria biblioteca apropriada
-    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-    const payload = btoa(JSON.stringify({ userId, exp: Date.now() + 24 * 60 * 60 * 1000 }));
-    const signature = btoa(`signature_${userId}`);
-    return `${header}.${payload}.${signature}`;
+  private generateToken(userId: string): string {
+    return btoa(JSON.stringify({ userId, timestamp: Date.now() }));
   }
 
   private validateToken(token: string): string | null {
     try {
-      const parts = token.split('.');
-      if (parts.length !== 3) return null;
-      
-      const payload = JSON.parse(atob(parts[1]));
-      if (payload.exp < Date.now()) return null;
-      
-      return payload.userId;
+      const decoded = JSON.parse(atob(token));
+      return decoded.userId;
     } catch {
       return null;
     }
   }
 
-  // AUTH ENDPOINTS
+  async register(credentials: RegisterRequest): Promise<ApiResponse<{ user: User; token: string }>> {
+    // Simular delay de rede
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-  async register(data: RegisterRequest): Promise<ApiResponse<{ user: User; token: string }>> {
-    console.log('POST /auth/register', data);
-    
-    const users = this.getUsers();
-    
-    if (users.find(u => u.username === data.username)) {
-      return { success: false, error: 'Username already exists' };
+    const existingUser = this.users.find(u => u.username === credentials.username);
+    if (existingUser) {
+      return {
+        success: false,
+        error: 'Usuário já existe'
+      };
     }
 
     const user: User = {
       id: this.generateId(),
-      username: data.username,
-      password: data.password, // Em produção, seria hasheado
+      username: credentials.username,
+      password: credentials.password, // Em produção, seria hasheado
       createdAt: new Date().toISOString()
     };
 
-    users.push(user);
-    this.saveUsers(users);
+    this.users.push(user);
+    this.saveToStorage();
 
-    const token = this.generateJWT(user.id);
-    
-    return { 
-      success: true, 
-      data: { user: { ...user, password: '' }, token },
-      message: 'User registered successfully'
+    const token = this.generateToken(user.id);
+
+    return {
+      success: true,
+      data: { user, token }
     };
   }
 
-  async login(data: LoginRequest): Promise<ApiResponse<{ user: User; token: string }>> {
-    console.log('POST /auth/login', data);
-    
-    const users = this.getUsers();
-    const user = users.find(u => u.username === data.username && u.password === data.password);
-    
+  async login(credentials: LoginRequest): Promise<ApiResponse<{ user: User; token: string }>> {
+    // Simular delay de rede
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const user = this.users.find(
+      u => u.username === credentials.username && u.password === credentials.password
+    );
+
     if (!user) {
-      return { success: false, error: 'Invalid credentials' };
+      return {
+        success: false,
+        error: 'Credenciais inválidas'
+      };
     }
 
-    const token = this.generateJWT(user.id);
-    
-    return { 
-      success: true, 
-      data: { user: { ...user, password: '' }, token },
-      message: 'Login successful'
+    const token = this.generateToken(user.id);
+
+    return {
+      success: true,
+      data: { user, token }
     };
   }
-
-  // TASK ENDPOINTS
 
   async getTasks(token: string): Promise<ApiResponse<Task[]>> {
-    console.log('GET /tasks');
-    
+    // Simular delay de rede
+    await new Promise(resolve => setTimeout(resolve, 300));
+
     const userId = this.validateToken(token);
     if (!userId) {
-      return { success: false, error: 'Unauthorized' };
+      return {
+        success: false,
+        error: 'Token inválido'
+      };
     }
 
-    const tasks = this.getTasks().filter(task => task.userId === userId);
-    return { success: true, data: tasks };
-  }
+    const userTasks = this.tasks.filter(task => task.userId === userId);
 
-  async createTask(token: string, data: CreateTaskRequest): Promise<ApiResponse<Task>> {
-    console.log('POST /tasks', data);
-    
-    const userId = this.validateToken(token);
-    if (!userId) {
-      return { success: false, error: 'Unauthorized' };
-    }
-
-    const tasks = this.getTasks();
-    const newTask: Task = {
-      id: this.generateId(),
-      title: data.title,
-      description: data.description,
-      status: data.status || 'pending',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      userId
+    return {
+      success: true,
+      data: userTasks
     };
-
-    tasks.push(newTask);
-    this.saveTasks(tasks);
-
-    return { success: true, data: newTask, message: 'Task created successfully' };
   }
 
-  async updateTask(token: string, taskId: string, data: UpdateTaskRequest): Promise<ApiResponse<Task>> {
-    console.log(`PUT /tasks/${taskId}`, data);
-    
+  async createTask(token: string, taskData: CreateTaskRequest): Promise<ApiResponse<Task>> {
+    // Simular delay de rede
+    await new Promise(resolve => setTimeout(resolve, 400));
+
     const userId = this.validateToken(token);
     if (!userId) {
-      return { success: false, error: 'Unauthorized' };
+      return {
+        success: false,
+        error: 'Token inválido'
+      };
     }
 
-    const tasks = this.getTasks();
-    const taskIndex = tasks.findIndex(task => task.id === taskId && task.userId === userId);
-    
-    if (taskIndex === -1) {
-      return { success: false, error: 'Task not found' };
-    }
-
-    const updatedTask = {
-      ...tasks[taskIndex],
-      ...data,
+    const task: Task = {
+      id: this.generateId(),
+      title: taskData.title,
+      description: taskData.description,
+      status: taskData.status || 'pending',
+      userId,
+      createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
 
-    tasks[taskIndex] = updatedTask;
-    this.saveTasks(tasks);
+    this.tasks.push(task);
+    this.saveToStorage();
 
-    return { success: true, data: updatedTask, message: 'Task updated successfully' };
+    return {
+      success: true,
+      data: task
+    };
+  }
+
+  async updateTask(token: string, taskId: string, updates: UpdateTaskRequest): Promise<ApiResponse<Task>> {
+    // Simular delay de rede
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    const userId = this.validateToken(token);
+    if (!userId) {
+      return {
+        success: false,
+        error: 'Token inválido'
+      };
+    }
+
+    const taskIndex = this.tasks.findIndex(task => task.id === taskId && task.userId === userId);
+    if (taskIndex === -1) {
+      return {
+        success: false,
+        error: 'Tarefa não encontrada'
+      };
+    }
+
+    const task = this.tasks[taskIndex];
+    this.tasks[taskIndex] = {
+      ...task,
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+
+    this.saveToStorage();
+
+    return {
+      success: true,
+      data: this.tasks[taskIndex]
+    };
   }
 
   async deleteTask(token: string, taskId: string): Promise<ApiResponse<void>> {
-    console.log(`DELETE /tasks/${taskId}`);
-    
+    // Simular delay de rede
+    await new Promise(resolve => setTimeout(resolve, 300));
+
     const userId = this.validateToken(token);
     if (!userId) {
-      return { success: false, error: 'Unauthorized' };
+      return {
+        success: false,
+        error: 'Token inválido'
+      };
     }
 
-    const tasks = this.getTasks();
-    const taskIndex = tasks.findIndex(task => task.id === taskId && task.userId === userId);
-    
+    const taskIndex = this.tasks.findIndex(task => task.id === taskId && task.userId === userId);
     if (taskIndex === -1) {
-      return { success: false, error: 'Task not found' };
+      return {
+        success: false,
+        error: 'Tarefa não encontrada'
+      };
     }
 
-    tasks.splice(taskIndex, 1);
-    this.saveTasks(tasks);
+    this.tasks.splice(taskIndex, 1);
+    this.saveToStorage();
 
-    return { success: true, message: 'Task deleted successfully' };
+    return {
+      success: true
+    };
   }
 }
 

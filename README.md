@@ -1,73 +1,199 @@
-# Welcome to your Lovable project
 
-## Project info
+# Sistema de Gerenciamento de Tarefas
 
-**URL**: https://lovable.dev/projects/6ddfd1e7-85fb-40b6-8252-dc3effdcea77
+Um sistema web de gerenciamento de tarefas (similar ao Trello) desenvolvido com React, TypeScript e simulação de backend com localStorage.
 
-## How can I edit this code?
+## 🚀 Tecnologias Utilizadas
 
-There are several ways of editing your application.
+- **Frontend:** React 18 + TypeScript
+- **Bundler:** Vite
+- **Styling:** Tailwind CSS + shadcn/ui
+- **Autenticação:** JWT (simulado)
+- **Persistência:** localStorage (simulando SQLite)
+- **Ícones:** Lucide React
 
-**Use Lovable**
+## 📋 Funcionalidades
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/6ddfd1e7-85fb-40b6-8252-dc3effdcea77) and start prompting.
+### Autenticação
+- ✅ Cadastro de usuários
+- ✅ Login com JWT
+- ✅ Logout
+- ✅ Proteção de rotas
 
-Changes made via Lovable will be committed automatically to this repo.
+### Gerenciamento de Tarefas
+- ✅ **CREATE:** Criar novas tarefas
+- ✅ **READ:** Listar todas as tarefas do usuário
+- ✅ **UPDATE:** Atualizar status e dados das tarefas
+- ✅ **DELETE:** Remover tarefas
 
-**Use your preferred IDE**
+### Interface
+- 📊 Dashboard com estatísticas
+- 📋 Board estilo Kanban (Pendente, Em Progresso, Concluído)
+- 🎨 Interface responsiva e moderna
+- 🔄 Drag & drop entre colunas de status
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🛠️ Pré-requisitos
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Antes de começar, você precisa ter instalado em sua máquina:
 
-Follow these steps:
+- [Node.js](https://nodejs.org/) (versão 18 ou superior)
+- [npm](https://www.npmjs.com/) (geralmente vem com o Node.js)
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 📦 Instalação e Execução
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### 1. Clone o repositório
+```bash
+git clone <URL_DO_REPOSITORIO>
+cd sistema-gerenciamento-tarefas
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+### 2. Instale as dependências
+```bash
+npm install
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### 3. Execute o projeto em modo de desenvolvimento
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### 4. Acesse a aplicação
+Abra seu navegador e acesse: `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🔧 Scripts Disponíveis
 
-**Use GitHub Codespaces**
+```bash
+# Executa o projeto em modo de desenvolvimento
+npm run dev
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Gera o build de produção
+npm run build
 
-## What technologies are used for this project?
+# Visualiza o build de produção
+npm run preview
 
-This project is built with:
+# Executa o linter
+npm run lint
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 📖 Como Usar
 
-## How can I deploy this project?
+### 1. Primeiro Acesso
+1. Acesse a aplicação
+2. Clique na aba "Cadastrar"
+3. Crie sua conta com usuário e senha
+4. Faça login automaticamente
 
-Simply open [Lovable](https://lovable.dev/projects/6ddfd1e7-85fb-40b6-8252-dc3effdcea77) and click on Share -> Publish.
+### 2. Gerenciando Tarefas
+1. Clique em "Nova Tarefa" para criar uma tarefa
+2. Preencha título, descrição e status inicial
+3. Use os cartões para:
+   - ✏️ Editar tarefa (ícone de lápis)
+   - 🗑️ Excluir tarefa (ícone de lixeira)
+   - 🔄 Alterar status (dropdown no cartão)
 
-## Can I connect a custom domain to my Lovable project?
+### 3. Organizando o Board
+- **Pendente:** Tarefas criadas e aguardando início
+- **Em Progresso:** Tarefas sendo executadas
+- **Concluído:** Tarefas finalizadas
 
-Yes, you can!
+## 🗃️ Estrutura do Projeto
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```
+src/
+├── components/          # Componentes React
+│   ├── ui/             # Componentes base (shadcn/ui)
+│   ├── AuthForm.tsx    # Formulário de autenticação
+│   ├── TaskBoard.tsx   # Board principal de tarefas
+│   ├── TaskCard.tsx    # Cartão individual da tarefa
+│   └── TaskForm.tsx    # Formulário de tarefa
+├── contexts/           # Context APIs
+│   └── AuthContext.tsx # Contexto de autenticação
+├── hooks/              # Custom hooks
+│   └── use-toast.ts    # Hook de notificações
+├── pages/              # Páginas da aplicação
+│   └── Index.tsx       # Página principal
+├── services/           # Serviços e APIs
+│   └── api.ts          # API simulada
+├── types/              # Definições TypeScript
+│   └── index.ts        # Types principais
+└── lib/                # Utilitários
+    └── utils.ts        # Funções auxiliares
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## 🔌 API Simulada
+
+O projeto simula uma API REST completa usando localStorage:
+
+### Endpoints de Autenticação
+- `POST /auth/register` - Cadastro de usuário
+- `POST /auth/login` - Login de usuário
+
+### Endpoints de Tarefas (Protegidos)
+- `GET /tasks` - Listar tarefas do usuário
+- `POST /tasks` - Criar nova tarefa
+- `PUT /tasks/:id` - Atualizar tarefa
+- `DELETE /tasks/:id` - Excluir tarefa
+
+### Headers Necessários
+```
+Authorization: Bearer <jwt_token>
+```
+
+## 📊 Dados Persistidos
+
+Os dados são salvos no localStorage do navegador:
+- `taskmanager_auth` - Dados de autenticação
+- `taskmanager_users` - Lista de usuários
+- `taskmanager_tasks` - Lista de tarefas
+
+## 🚀 Deploy
+
+### Build de Produção
+```bash
+npm run build
+```
+
+### Estrutura de Deploy
+Após o build, os arquivos estarão na pasta `dist/` prontos para deploy em qualquer servidor web estático.
+
+### Opções de Hospedagem
+- Vercel
+- Netlify
+- GitHub Pages
+- Firebase Hosting
+
+## 🛡️ Segurança
+
+⚠️ **Importante:** Este é um projeto acadêmico com simulação de backend. Em produção, implemente:
+
+- Hash de senhas (bcrypt)
+- Validação JWT no servidor
+- HTTPS obrigatório
+- Sanitização de dados
+- Rate limiting
+- Validação de entrada
+
+## 🤝 Contribuição
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📝 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+
+## 📞 Suporte
+
+Para dúvidas ou problemas:
+1. Verifique se todas as dependências estão instaladas
+2. Confirme se está usando Node.js 18+
+3. Limpe o cache: `npm clean-install`
+4. Reinicie o servidor de desenvolvimento
+
+---
+
+**Desenvolvido para fins acadêmicos** 🎓
