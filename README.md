@@ -14,7 +14,7 @@ Um sistema web de gerenciamento de tarefas (similar ao Trello) desenvolvido com 
 
 ## 📋 Funcionalidades
 
-### Autenticação
+### Autenticação:
 - ✅ Cadastro de usuários
 - ✅ Login com JWT
 - ✅ Logout
